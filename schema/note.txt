@@ -1,0 +1,138 @@
+users
+- id
+- name
+- email
+- password
+- role
+- reputation
+- is_banned
+- banned_at
+- email_verified_at
+- remember_token
+- created_at
+- updated_at
+
+colocations
+- id
+- name
+- owner_id
+- status
+- cancelled_at
+- created_at
+- updated_at
+
+memberships
+- id
+- user_id
+- colocation_id
+- role
+- joined_at
+- left_at
+- created_at
+- updated_at
+
+invitations
+- id
+- colocation_id
+- email
+- token
+- status
+- expires_at
+- accepted_at
+- created_at
+- updated_at
+
+categories
+- id
+- colocation_id
+- name
+- created_at
+- updated_at
+
+expenses
+- id
+- colocation_id
+- category_id
+- paid_by
+- title
+- amount
+- expense_date
+- created_at
+- updated_at
+
+expense_shares
+- id
+- expense_id
+- user_id
+- share_amount
+- created_at
+- updated_at
+
+settlements
+- id
+- colocation_id
+- debtor_id
+- creditor_id
+- amount
+- status
+- paid_at
+- created_at
+- updated_at
+------------------------------------
+------------------------------------
+------------------------------------
+admin: (user)
+-statistics
+-list users
+-ban include choose owner
++peu etre owner/member dans plusieur
+
+owner: (user)
+-send invitation include search user
+-manage depenses (crud)
+-manage category (crud)
+-total des soldes et des remboursements
+-annulation collocation
+-retrait
+-pay
+
+user:
+-creation de colocation
+-create depense (montant, date, catégorie, payeur)
+-leave collocation
+-join collocation
++filtrage par mois
++reputation
+---------
+---------
+---------
+pages:
+========User=========
+-collocations page:
+    -create collocation button enbale if admin or not in a collocation
+    -would include previous collocations
+    -and the current collocations
+    -the colocations are cards show: member count, name, owner full name
+
+-collocation detail page:
+    -setting drop down:
+        -invite user
+        -manage category
+        -cancel collocation
+        -delete collocation
+        -leave colocation
+
+    -lien vers owing list
+    -create depense button
+
+    -list of users in the side with remove button visible for admin
+    -depenses cards: montant, date, category, payeur full name, owed money
+
+-owing list:
+    - who owes who and the amount of money and whether it's paid or not with pay button visible only for the admin
+
+========Admin=========
+-users table page:
+    - users table, badge for role, button ban in actions column
+-dashboard page:
+    - statistics about colocation and depenses
