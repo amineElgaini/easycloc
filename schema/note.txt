@@ -14,7 +14,6 @@ colocations
 - name
 - owner_id
 - status
-- cancelled_at
 
 memberships
 - id
@@ -27,9 +26,8 @@ invitations
 - colocation_id
 - email
 - token
-- status
+- is_accepted
 - expires_at
-- accepted_at
 
 categories
 - id
@@ -50,15 +48,7 @@ expense_shares
 - expense_id
 - user_id
 - share_amount
-
-settlements
-- id
-- colocation_id
-- debtor_id
-- creditor_id
-- amount
-- status
-- paid_at
+- is_payed
 ------------------------------------
 ------------------------------------
 ------------------------------------
