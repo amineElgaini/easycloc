@@ -108,3 +108,118 @@ pages:
     - users table, badge for role, button ban in actions column
 -dashboard page:
     - statistics about colocation and depenses
+--------------------------------------------------------------
+        Schema::create('users', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email')->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password');
+            
+            $table->string('profile_image')->nullable();
+            $table->enum('role', ['admin', 'user'])->default('user');
+            $table->integer('reputation')->default(0);
+            $table->boolean('is_banned')->default(false);
+            $table->timestamp('banned_at')->nullable();
+            
+            $table->rememberToken();
+            $table->timestamps();
+        });
+
+        Schema::create('colocations', function (Blueprint $table) {
+            $table->id();
+            
+            $table->string('name');
+            $table->foreignId('owner_id')
+                ->constrained('users')
+                ->cascadeOnDelete();
+            $table->enum('status', ['active', 'cancelled'])->default('active');
+
+            $table->timestamps();
+        });
+
+        Schema::create('memberships', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+                
+            $table->foreignId('colocation_id')
+                ->constrained()
+                ->cascadeOnDelete();
+                
+            $table->timestamp('left_at')->nullable();
+            
+            $table->timestamps();
+            
+            $table->unique(['user_id', 'colocation_id']);
+        });
+
+        Schema::create('invitations', function (Blueprint $table) {
+            $table->id();
+            
+            $table->foreignId('colocation_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->string('email');
+            $table->string('token')->unique();
+            $table->boolean('is_accepted')->default(false);
+            $table->timestamp('expires_at');
+
+            $table->timestamps();
+        });
+
+        Schema::create('categories', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('colocation_id')
+                ->constrained()
+                ->cascadeOnDelete();
+            $table->string('name');
+
+            $table->timestamps();
+        });
+
+        Schema::create('expenses', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('colocation_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('category_id')
+                ->nullable()
+                ->constrained()
+                ->nullOnDelete();
+
+            $table->foreignId('paid_by')
+                ->constrained('users')
+                ->cascadeOnDelete();
+
+            $table->string('title');
+            $table->decimal('amount', 10, 2);
+            $table->date('expense_date');
+
+            $table->timestamps();
+        });
+
+        Schema::create('expense_shares', function (Blueprint $table) {
+            $table->id();
+
+            $table->foreignId('expense_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->foreignId('user_id')
+                ->constrained()
+                ->cascadeOnDelete();
+
+            $table->decimal('share_amount', 10, 2);
+
+            $table->boolean('is_payed')->default(false);
+
+            $table->timestamps();
+
+            $table->unique(['expense_id', 'user_id']);
+        });

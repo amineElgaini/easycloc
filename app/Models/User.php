@@ -21,6 +21,11 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'profile_image',
+        'role',
+        'reputation',
+        'is_banned',
+        'banned_at',
     ];
 
     /**
@@ -43,6 +48,54 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'banned_at' => 'datetime',
+            'is_banned' => 'boolean',
         ];
+    }
+
+    public function ownedColocations()
+    {
+        return $this->hasMany(Colocation::class, 'owner_id');
+    }
+
+    public function memberships()
+    {
+        return $this->hasMany(Membership::class);
+    }
+
+    // bring collocations
+    public function colocations()
+    {
+        return $this->belongsToMany(Colocation::class, 'memberships')
+            ->withPivot('left_at')
+            ->withTimestamps();
+    }
+
+    // public function groupedColocations(): array
+    // {
+    //     return [
+    //         'active' => $this->colocations()
+    //             ->wherePivotNull('left_at')
+    //             ->get(),
+
+    //         'inactive' => $this->colocations()
+    //             ->wherePivotNotNull('left_at')
+    //             ->get(),
+    //     ];
+    // }
+
+    public function paidExpenses()
+    {
+        return $this->hasMany(Expense::class, 'paid_by');
+    }
+
+    public function expenseShares()
+    {
+        return $this->hasMany(ExpenseShare::class);
+    }
+
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
     }
 }
