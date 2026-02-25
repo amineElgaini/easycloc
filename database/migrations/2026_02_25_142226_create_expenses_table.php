@@ -14,21 +14,24 @@ return new class extends Migration
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('expense_id')
+            $table->foreignId('colocation_id')
                 ->constrained()
                 ->cascadeOnDelete();
 
-            $table->foreignId('user_id')
+            $table->foreignId('category_id')
+                ->nullable()
                 ->constrained()
+                ->nullOnDelete();
+
+            $table->foreignId('paid_by')
+                ->constrained('users')
                 ->cascadeOnDelete();
 
-            $table->decimal('share_amount', 10, 2);
-
-            $table->boolean('is_payed')->default(false);
+            $table->string('title');
+            $table->decimal('amount', 10, 2);
+            $table->date('expense_date');
 
             $table->timestamps();
-
-            $table->unique(['expense_id', 'user_id']);
         });
     }
 
