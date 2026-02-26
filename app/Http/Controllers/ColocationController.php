@@ -79,7 +79,25 @@ class ColocationController extends Controller
      */
     public function show(string $id)
     {
-        //
+        $colocation = Colocation::with([
+            'owner',
+            'members',
+            'expenses' => function ($query) {
+                $query->with(['payer', 'category', 'shares'])->latest('expense_date');
+            },
+            'invitations'
+        ])->findOrFail($id);
+
+        $totalExpenses = $colocation->expenses->sum('amount');
+        $membersCount = $colocation->members->count();
+
+        // Calculate total the current user owes in this colocation
+        $userOwes = \App\Models\ExpenseShare::where('user_id', auth()->id())
+            ->whereIn('expense_id', $colocation->expenses->pluck('id'))
+            ->where('is_payed', false)
+            ->sum('share_amount');
+
+        return view('colocations.show', compact('colocation', 'totalExpenses', 'membersCount', 'userOwes'));
     }
 
     /**

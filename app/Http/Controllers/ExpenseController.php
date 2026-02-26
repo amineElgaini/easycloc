@@ -17,9 +17,10 @@ class ExpenseController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(\App\Models\Colocation $colocation)
     {
-        //
+        $categories = $colocation->categories;
+        return view('depenses.create', compact('colocation', 'categories'));
     }
 
     /**
@@ -27,7 +28,38 @@ class ExpenseController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'colocation_id' => 'required|exists:colocations,id',
+            'category_id'   => 'required|exists:categories,id',
+            'title'         => 'required|string|max:255',
+            'amount'        => 'required|numeric|min:0.01',
+            'expense_date'  => 'required|date',
+        ]);
+
+        $validated['paid_by'] = auth()->id();
+
+        $expense = \App\Models\Expense::create($validated);
+
+        // Get all members of the colocation to split the expense
+        $colocation = \App\Models\Colocation::findOrFail($validated['colocation_id']);
+        $members = $colocation->members;
+        $memberCount = $members->count();
+
+        if ($memberCount > 0) {
+            $shareAmount = round($expense->amount / $memberCount, 2);
+            
+            foreach ($members as $member) {
+                \App\Models\ExpenseShare::create([
+                    'expense_id'   => $expense->id,
+                    'user_id'      => $member->id,
+                    'share_amount' => $shareAmount,
+                    'is_payed'     => $member->id === auth()->id(), // Payer's share is already "paid"
+                ]);
+            }
+        }
+
+        return redirect()->route('colocations.show', $expense->colocation_id)
+            ->with('success', 'Expense created and split successfully!');
     }
 
     /**

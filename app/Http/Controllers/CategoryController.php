@@ -27,31 +27,24 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
-    }
+        $validated = $request->validate([
+            'colocation_id' => 'required|exists:colocations,id',
+            'name'          => 'required|string|max:255',
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        $colocation = \App\Models\Colocation::findOrFail($validated['colocation_id']);
+        
+        // Ensure only owner can add categories
+        if ($colocation->owner_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
+        $category = \App\Models\Category::create($validated);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
+        return response()->json([
+            'success'  => true,
+            'category' => $category
+        ]);
     }
 
     /**
@@ -59,6 +52,20 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $category = \App\Models\Category::findOrFail($id);
+        
+        // Ensure only owner can delete categories
+        if ($category->colocation->owner_id !== auth()->id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        // Check if category has expenses
+        if ($category->expenses()->exists()) {
+            return response()->json(['error' => 'Cannot delete category with existing expenses.'], 422);
+        }
+
+        $category->delete();
+
+        return response()->json(['success' => true]);
     }
 }

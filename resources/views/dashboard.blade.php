@@ -44,7 +44,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Colocations</p>
-                    <p class="text-3xl font-bold text-slate-900">128</p>
+                    <p class="text-3xl font-bold text-slate-900">{{$totalColocations}}</p>
                 </div>
             </div>
 
@@ -61,7 +61,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Expenses</p>
-                    <p class="text-3xl font-bold text-slate-900">$42,500</p>
+                    <p class="text-3xl font-bold text-slate-900">{{$totalExpenses}} DH</p>
                 </div>
             </div>
 
@@ -78,7 +78,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Members</p>
-                    <p class="text-3xl font-bold text-slate-900">512</p>
+                    <p class="text-3xl font-bold text-slate-900">{{$totalMembers}}</p>
                 </div>
             </div>
 
@@ -95,7 +95,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Active Invitations</p>
-                    <p class="text-3xl font-bold text-slate-900">24</p>
+                    <p class="text-3xl font-bold text-slate-900">{{ $activeInvitations }}</p>
                 </div>
             </div>
         </div>
