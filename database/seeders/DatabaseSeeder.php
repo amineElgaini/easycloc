@@ -25,7 +25,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
 
-        // 1Create Admin
+        // Create Admin
         $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@test.com',
@@ -45,6 +45,8 @@ class DatabaseSeeder extends Seeder
                 'name' => "Colocation " . ($i + 1),
                 'owner_id' => $owner->id,
                 'status' => 'active',
+                'location' => fake()->address(),
+                'image' => "properties/house_1.jpg",
             ]);
 
             // Add owner as member

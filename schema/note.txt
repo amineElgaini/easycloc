@@ -86,6 +86,8 @@ pages:
     -and the current collocations
     -the colocations are cards show: member count, name, owner full name
 
+-create colocation page:
+
 -collocation detail page:
     -setting drop down:
         -invite user
