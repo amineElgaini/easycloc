@@ -65,7 +65,83 @@
                     </div>
                 </div>
 
+                <!-- Invitation Modal -->
+                <div id="inviteModal" class="fixed inset-0 z-50 hidden">
+                    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onclick="toggleInviteModal(false)"></div>
+                    <div class="absolute left-1/2 top-1/2 w-full max-w-md -translate-x-1/2 -translate-y-1/2 p-4">
+                        <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+                            <div class="flex items-center justify-between border-b border-slate-100 p-6 dark:border-slate-800">
+                                <h3 class="text-xl font-bold text-slate-900 dark:text-white">Invite new member</h3>
+                                <button onclick="toggleInviteModal(false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300">
+                                    <span class="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div class="p-6">
+                                <div class="mb-6">
+                                    <label class="mb-1.5 block text-xs font-bold uppercase tracking-wider text-slate-400">Email Address</label>
+                                    <div class="flex gap-2">
+                                        <input type="email" id="inviteEmail" placeholder="friend@example.com" class="block w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-900 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-800 dark:bg-slate-800 dark:text-white" />
+                                        <button onclick="sendInvitation()" class="rounded-lg bg-primary px-4 py-2 text-sm font-bold text-white hover:bg-primary/90 transition-all active:scale-95">Send</button>
+                                    </div>
+                                    <p id="inviteError" class="mt-2 text-xs text-red-500 hidden"></p>
+                                    <p id="inviteSuccess" class="mt-2 text-xs text-emerald-500 hidden"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <script>
+                    function toggleInviteModal(show) {
+                        const modal = document.getElementById('inviteModal');
+                        if (show) {
+                            modal.classList.remove('hidden');
+                            document.body.style.overflow = 'hidden';
+                        } else {
+                            modal.classList.add('hidden');
+                            document.body.style.overflow = 'auto';
+                        }
+                    }
+
+                    async function sendInvitation() {
+                        const emailInput = document.getElementById('inviteEmail');
+                        const errorMsg = document.getElementById('inviteError');
+                        const successMsg = document.getElementById('inviteSuccess');
+                        const email = emailInput.value.trim();
+
+                        if (!email) return;
+
+                        errorMsg.classList.add('hidden');
+                        successMsg.classList.add('hidden');
+
+                        try {
+                            const response = await fetch('{{ route('colocation.invite.send', $colocation->id) }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                                },
+                                body: JSON.stringify({ email: email })
+                            });
+
+                            const data = await response.json();
+
+                            if (response.ok) {
+                                successMsg.textContent = data.message;
+                                successMsg.classList.remove('hidden');
+                                emailInput.value = '';
+                                setTimeout(() => toggleInviteModal(false), 2000);
+                            } else {
+                                errorMsg.textContent = data.message || 'Failed to send invitation';
+                                errorMsg.classList.remove('hidden');
+                            }
+                        } catch (error) {
+                            errorMsg.textContent = 'Network error. Please try again.';
+                            errorMsg.classList.remove('hidden');
+                        }
+                    }
+
                     function toggleCategoryModal(show) {
                         const modal = document.getElementById('categoryModal');
                         if (show) {
@@ -218,7 +294,7 @@
                         <div class="mb-4 flex items-center justify-between">
                             <h3 class="text-lg font-bold text-slate-900 dark:text-white">Members ({{ $membersCount }})</h3>
                             @if(auth()->id() === $colocation->owner_id)
-                                <button class="text-primary hover:underline text-xs font-bold">Invite</button>
+                                <button onclick="toggleInviteModal(true)" class="text-primary hover:underline text-xs font-bold">Invite</button>
                             @endif
                         </div>
                         <ul class="flex flex-col gap-4">

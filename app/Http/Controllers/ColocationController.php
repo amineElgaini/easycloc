@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Colocation;
+use App\Models\ExpenseShare;
 use Illuminate\Http\Request;
 
 class ColocationController extends Controller
@@ -91,8 +92,7 @@ class ColocationController extends Controller
         $totalExpenses = $colocation->expenses->sum('amount');
         $membersCount = $colocation->members->count();
 
-        // Calculate total the current user owes in this colocation
-        $userOwes = \App\Models\ExpenseShare::where('user_id', auth()->id())
+        $userOwes = ExpenseShare::where('user_id', auth()->id())
             ->whereIn('expense_id', $colocation->expenses->pluck('id'))
             ->where('is_payed', false)
             ->sum('share_amount');
@@ -122,5 +122,31 @@ class ColocationController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+    public function inviteMember(Request $request, $id)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $colocation = Colocation::findOrFail($id);
+
+        // Check if user is already a member
+        if ($colocation->members()->where('email', $request->email)->exists()) {
+            return response()->json(['message' => 'User is already a member of this colocation.'], 422);
+        }
+
+        // Create invitation
+        $invitation = \App\Models\Invitation::create([
+            'colocation_id' => $colocation->id,
+            'email' => $request->email,
+            'token' => \Illuminate\Support\Str::random(32),
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        // Send email
+        \Illuminate\Support\Facades\Mail::to($request->email)->send(new \App\Mail\InvitationMail($colocation, $invitation));
+
+        return response()->json(['message' => 'Invitation sent successfully!']);
     }
 }
