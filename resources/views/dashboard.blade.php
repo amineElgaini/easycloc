@@ -187,7 +187,15 @@
         <div class="mt-10 rounded-2xl bg-white border border-slate-200 shadow-sm overflow-hidden">
             <div class="flex items-center justify-between px-6 py-5 border-b border-slate-100">
                 <h3 class="text-lg font-bold text-slate-900">Active Colocations</h3>
-                <button class="text-sm font-medium text-blue-600 hover:underline">Manage all</button>
+                <div class="flex items-center gap-4">
+                    @if(auth()->user()->isAdmin())
+                        <a href="{{ route('admin.users') }}" class="text-sm font-medium text-indigo-600 hover:underline flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                            Manage Users
+                        </a>
+                    @endif
+                    <button class="text-sm font-medium text-blue-600 hover:underline">Manage all</button>
+                </div>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left">

@@ -71,19 +71,6 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
-    // public function groupedColocations(): array
-    // {
-    //     return [
-    //         'active' => $this->colocations()
-    //             ->wherePivotNull('left_at')
-    //             ->get(),
-
-    //         'inactive' => $this->colocations()
-    //             ->wherePivotNotNull('left_at')
-    //             ->get(),
-    //     ];
-    // }
-
     public function paidExpenses()
     {
         return $this->hasMany(Expense::class, 'paid_by');

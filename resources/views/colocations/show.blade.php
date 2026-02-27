@@ -5,19 +5,41 @@
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h1 class="text-3xl font-black tracking-tight text-slate-900 dark:text-white">{{ $colocation->name }}</h1>
-                        <p class="text-slate-500 dark:text-slate-400">{{ $colocation->location }} • Monthly overview</p>
+                        <p class="text-slate-500 dark:text-slate-400">
+                            {{ $colocation->location }} • 
+                            @if($selectedMonth)
+                                {{ \Carbon\Carbon::parse($selectedMonth)->format('F Y') }} overview
+                            @else
+                                Monthly overview
+                            @endif
+                        </p>
                     </div>
                     <div class="flex items-center gap-3">
-                        @if(auth()->id() === $colocation->owner_id)
-                            <button onclick="toggleCategoryModal(true)" class="flex items-center justify-center gap-2 rounded-lg bg-white border border-slate-200 dark:border-slate-700 px-6 py-3 text-sm font-bold text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95">
-                                <span class="material-symbols-outlined">settings</span>
-                                Manage Categories
-                            </button>
+                        @if($colocation->status === 'active')
+                            @if(auth()->id() === $colocation->owner_id)
+                                <button onclick="toggleCategoryModal(true)" class="flex items-center justify-center gap-2 rounded-lg bg-white border border-slate-200 dark:border-slate-700 px-6 py-3 text-sm font-bold text-slate-700 dark:text-white shadow-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-all active:scale-95">
+                                    <span class="material-symbols-outlined">settings</span>
+                                    Manage Categories
+                                </button>
+
+                                <form action="{{ route('colocations.cancel', $colocation->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this colocation? This will stop all active transactions and move it to previous colocations.')">
+                                    @csrf
+                                    <button type="submit" class="flex items-center justify-center gap-2 rounded-lg bg-white border border-rose-200 dark:border-rose-900/30 px-6 py-3 text-sm font-bold text-rose-600 dark:text-rose-400 shadow-sm hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all active:scale-95">
+                                        <span class="material-symbols-outlined">cancel</span>
+                                        Cancel Colocation
+                                    </button>
+                                </form>
+                            @endif
+                            <a href="{{ route('expenses.create', $colocation->id) }}" class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
+                                <span class="material-symbols-outlined">add</span>
+                                Create Expense
+                            </a>
+                        @else
+                            <div class="rounded-lg bg-rose-50 dark:bg-rose-900/20 px-4 py-2 border border-rose-100 dark:border-rose-900/30 flex items-center gap-2 text-rose-600 dark:text-rose-400">
+                                <span class="material-symbols-outlined text-sm">lock</span>
+                                <span class="text-xs font-bold uppercase tracking-wider">Colocation Cancelled</span>
+                            </div>
                         @endif
-                        <a href="{{ route('expenses.create', $colocation->id) }}" class="flex items-center justify-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-bold text-white shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95">
-                            <span class="material-symbols-outlined">add</span>
-                            Create Expense
-                        </a>
                     </div>
                 </div>
 
@@ -231,13 +253,26 @@
                 <div class="flex flex-col gap-4">
                     <div class="flex items-center justify-between">
                         <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
-                        <a href="{{ route('colocations.debts', $colocation->id) }}" class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
-                            <span class="material-symbols-outlined text-sm">payments</span>
-                            See Settlements
-                        </a>
+                        <div class="flex items-center gap-4">
+                            <form action="{{ route('colocations.show', $colocation->id) }}" method="GET" id="monthFilterForm" class="flex items-center gap-2">
+                                <label for="month" class="hidden sm:block text-xs font-bold text-slate-400 uppercase tracking-wider">Filter:</label>
+                                <select name="month" id="month" onchange="document.getElementById('monthFilterForm').submit()" class="rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-bold text-slate-700 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 dark:border-slate-700 dark:bg-slate-800 dark:text-white transition-all cursor-pointer">
+                                    <option value="">All Months</option>
+                                    @foreach($availableMonths as $month)
+                                        <option value="{{ $month }}" {{ $selectedMonth == $month ? 'selected' : '' }}>
+                                            {{ \Carbon\Carbon::parse($month)->format('F Y') }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </form>
+                            <a href="{{ route('colocations.debts', $colocation->id) }}" class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                                <span class="material-symbols-outlined text-sm">payments</span>
+                                See Settlements
+                            </a>
+                        </div>
                     </div>
                     
-                    @forelse($colocation->expenses as $expense)
+                    @forelse($filteredExpenses as $expense)
                         @php
                             $userShare = $expense->shares->where('user_id', auth()->id())->first();
                             $otherSharesTotal = $expense->shares->where('user_id', '!=', auth()->id())->sum('share_amount');
@@ -278,7 +313,13 @@
                         <div class="flex flex-col items-center justify-center py-12 text-slate-500">
                             <span class="material-symbols-outlined text-6xl opacity-20">receipt_long</span>
                             <p class="mt-4 font-medium">No expenses yet</p>
-                            <p class="text-sm">Start by creating your first expense!</p>
+                            <p class="text-sm">
+                                @if($selectedMonth)
+                                    No expenses found for {{ \Carbon\Carbon::parse($selectedMonth)->format('F Y') }}.
+                                @else
+                                    Start by creating your first expense!
+                                @endif
+                            </p>
                         </div>
                     @endforelse
                 </div>
@@ -317,12 +358,33 @@
                                                     <span class="text-[10px] ml-1 px-1.5 py-0.5 bg-slate-100 dark:bg-slate-800 rounded font-normal text-slate-500">Admin</span>
                                                 @endif
                                             </p>
-                                            <p class="text-[10px] text-emerald-500 font-bold uppercase">Online</p>
+                                            <div class="flex items-center gap-2">
+                                                <p class="text-[10px] text-emerald-500 font-bold uppercase">Online</p>
+                                                <div class="flex items-center gap-0.5 text-amber-500">
+                                                    <span class="material-symbols-outlined text-[12px] fill-1">star</span>
+                                                    <span class="text-[10px] font-bold">{{ $member->reputation }}</span>
+                                                </div>
+                                            </div>
                                         </div>
+                                    </div>
+                                    
+                                    <div class="flex items-center gap-2">
+                                        @if($colocation->status === 'active' && auth()->id() === $colocation->owner_id && $member->id !== $colocation->owner_id)
+                                            <form action="{{ route('colocations.kick', [$colocation->id, $member->id]) }}" method="POST" onsubmit="return confirm('Are you sure you want to kick {{ $member->name }}? Their unpaid debts will be transferred to you.')">
+                                                @csrf
+                                                <button type="submit" class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 hover:bg-rose-50 hover:text-rose-500 transition-all" title="Kick Member">
+                                                    <span class="material-symbols-outlined text-lg">person_remove</span>
+                                                </button>
+                                            </form>
+                                        @endif
                                     </div>
                                 </li>
                             @endforeach
                         </ul>
+
+                        @if(auth()->id() !== $colocation->owner_id)
+                            </div>
+                        @endif
                     </div>
                 </div>
             </aside>

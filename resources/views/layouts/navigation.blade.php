@@ -19,9 +19,7 @@
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Dashboard') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('manageUsers')" :active="request()->routeIs('manageUsers')">
-                            {{ __('ManageUsers') }}
-                        </x-nav-link>
+                       
                     @endif
                     <x-nav-link :href="route('colocations.index')" :active="request()->routeIs('colocations.*')">
                         {{ __('Colocations') }}
