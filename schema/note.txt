@@ -56,15 +56,15 @@ admin: (user)
 -statistics
 -list users
 -ban include choose owner
+-transfer owner
 +peu etre owner/member dans plusieur
 
 owner: (user)
 -send invitation input email
--manage depenses (crud)
 -manage category (crud)
 -annulation collocation
--retrait
--pay
+-retrait member
+-pay depense
 
 user:
 -creation de colocation
@@ -107,7 +107,7 @@ pages:
 
 ========Admin=========
 -users table page:
-    - users table, badge for role, button ban in actions column
+    - users table, badge for role, button ban in actions column, trasnfer ownership
 -dashboard page:
     - statistics about colocation and depenses
 --------------------------------------------------------------
