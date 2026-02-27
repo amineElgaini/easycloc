@@ -30,7 +30,10 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/categories/{category}', [App\Http\Controllers\CategoryController::class, 'destroy'])->name('categories.destroy');
 
     Route::post('/colocation/{id}/invite', [ColocationController::class, 'inviteMember'])
-    ->name('colocation.invite.send');
+        ->name('colocation.invite.send');
+
+    Route::get('/colocations/{colocation}/debts', [ColocationController::class, 'debts'])->name('colocations.debts');
+    Route::post('/shares/{share}/settle', [ColocationController::class, 'settleShare'])->name('shares.settle');
 
     Route::get('/invitations/accept/{token}', [App\Http\Controllers\InvitationController::class, 'acceptView'])->name('invitations.accept.view');
     Route::post('/invitations/accept/{token}/process', [App\Http\Controllers\InvitationController::class, 'accept'])->name('invitations.accept.process');

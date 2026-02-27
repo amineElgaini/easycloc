@@ -49,7 +49,6 @@ class ColocationController extends Controller
             'image'    => 'required|image|max:2048',
         ]);
 
-        // Check if user is already in an active colocation (unless admin)
         if (!auth()->user()->is_admin) {
             $alreadyInColocation = auth()->user()
                 ->colocations()
@@ -68,7 +67,6 @@ class ColocationController extends Controller
 
         $colocation = Colocation::create($validated);
 
-        // Automatically add the owner as the first member
         $colocation->members()->attach(auth()->id());
 
         return redirect()->route('colocations.index')
@@ -148,5 +146,50 @@ class ColocationController extends Controller
         \Illuminate\Support\Facades\Mail::to($request->email)->send(new \App\Mail\InvitationMail($colocation, $invitation));
 
         return response()->json(['message' => 'Invitation sent successfully!']);
+    }
+
+    public function debts($id)
+    {
+        $colocation = Colocation::with(['owner', 'members', 'expenses.shares.user', 'expenses.payer'])->findOrFail($id);
+        
+        $allShares = $colocation->expenses->flatMap->shares;
+        
+        // A meaningful settlement is when a user owes the payer of an expense.
+        $meaningfulShares = $allShares->filter(function($share) {
+            return $share->user_id !== $share->expense->paid_by;
+        });
+
+        $unpaidShares = $meaningfulShares->where('is_payed', false);
+        $totalOutstanding = $unpaidShares->sum('share_amount');
+        $pendingSettlementsCount = $unpaidShares->count();
+        $distinctUsersOwing = $unpaidShares->pluck('user_id')->unique()->count();
+
+        // We'll also need the user's specific debt for the header
+        $userOwes = ExpenseShare::where('user_id', auth()->id())
+            ->whereIn('expense_id', $colocation->expenses->pluck('id'))
+            ->where('is_payed', false)
+            ->sum('share_amount');
+
+        return view('colocations.depenseDetail', compact(
+            'colocation', 
+            'userOwes', 
+            'meaningfulShares', 
+            'totalOutstanding', 
+            'pendingSettlementsCount', 
+            'distinctUsersOwing'
+        ));
+    }
+
+    public function settleShare($shareId)
+    {
+        $share = ExpenseShare::with('expense.colocation')->findOrFail($shareId);
+        
+        if (auth()->id() !== $share->expense->colocation->owner_id) {
+            return back()->with('error', 'Only the colocation owner can settle debts.');
+        }
+
+        $share->update(['is_payed' => true]);
+
+        return back()->with('success', 'Debt settled successfully.');
     }
 }

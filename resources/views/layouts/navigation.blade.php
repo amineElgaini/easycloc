@@ -15,9 +15,14 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
+                    @if (Auth::user()->isAdmin())
+                        <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
+                            {{ __('Dashboard') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('manageUsers')" :active="request()->routeIs('manageUsers')">
+                            {{ __('ManageUsers') }}
+                        </x-nav-link>
+                    @endif
                     <x-nav-link :href="route('colocations.index')" :active="request()->routeIs('colocations.*')">
                         {{ __('Colocations') }}
                     </x-nav-link>

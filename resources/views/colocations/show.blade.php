@@ -229,7 +229,13 @@
                 </script>
 
                 <div class="flex flex-col gap-4">
-                    <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-lg font-bold text-slate-900 dark:text-white">Recent Transactions</h3>
+                        <a href="{{ route('colocations.debts', $colocation->id) }}" class="flex items-center gap-1.5 text-xs font-bold text-primary hover:text-primary/80 transition-colors">
+                            <span class="material-symbols-outlined text-sm">payments</span>
+                            See Settlements
+                        </a>
+                    </div>
                     
                     @forelse($colocation->expenses as $expense)
                         @php
@@ -246,7 +252,7 @@
                                         @else payments @endif
                                     </span>
                                 </div>
-                                <div>
+                                <div class="flex-1">
                                     <h4 class="font-bold text-slate-900 dark:text-white">{{ $expense->title }}</h4>
                                     <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500 dark:text-slate-400">
                                         <span class="flex items-center gap-1"><span class="material-symbols-outlined text-sm">calendar_today</span> {{ $expense->expense_date->format('M d, Y') }}</span>
@@ -280,7 +286,7 @@
 
             <aside class="w-full shrink-0 lg:w-80">
                 <div class="flex flex-col gap-6">
-                    <div class="group relative flex items-center justify-between rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/30 transition-transform hover:-translate-y-1">
+                    <a href="{{ route('colocations.debts', $colocation->id) }}" class="group relative flex items-center justify-between rounded-xl bg-primary p-6 text-white shadow-lg shadow-primary/30 transition-transform hover:-translate-y-1">
                         <div>
                             <p class="text-sm font-medium opacity-80">Total you owe</p>
                             <p class="text-3xl font-black">${{ number_format($userOwes, 2) }}</p>
@@ -288,7 +294,7 @@
                         <div class="flex h-12 w-12 items-center justify-center rounded-full bg-white/20">
                             <span class="material-symbols-outlined text-2xl">account_balance_wallet</span>
                         </div>
-                    </div>
+                    </a>
 
                     <div class="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
                         <div class="mb-4 flex items-center justify-between">

@@ -61,7 +61,7 @@
                 </div>
                 <div>
                     <p class="text-xs font-medium text-slate-500 uppercase tracking-wider">Total Expenses</p>
-                    <p class="text-3xl font-bold text-slate-900">{{$totalExpenses}} DH</p>
+                    <p class="text-3xl font-bold text-slate-900">{{$totalExpenses}}</p>
                 </div>
             </div>
 

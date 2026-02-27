@@ -14,17 +14,14 @@ class InvitationController extends Controller
     {
         $invitation = \App\Models\Invitation::where('token', $token)->firstOrFail();
 
-        // Check if expired
         if ($invitation->expires_at->isPast()) {
             return view('invitations.accept', ['error' => 'This invitation has expired.']);
         }
 
-        // Check if already used
         if ($invitation->is_accepted) {
             return view('invitations.accept', ['error' => 'This invitation has already been accepted.']);
         }
 
-        // Security: Ensure logged-in user email matches if we want to be strict
         if (auth()->user()->email !== $invitation->email) {
             return view('invitations.accept', ['error' => 'This invitation was sent to a different email address. Please log in with the correct account.']);
         }
