@@ -19,6 +19,9 @@ class ExpenseController extends Controller
      */
     public function create(\App\Models\Colocation $colocation)
     {
+        if ($colocation->status === 'cancelled') {
+            return redirect()->route('colocations.show', $colocation->id)->with('error', 'Cannot add expenses to a cancelled colocation.');
+        }
         $categories = $colocation->categories;
         return view('depenses.create', compact('colocation', 'categories'));
     }
@@ -38,10 +41,13 @@ class ExpenseController extends Controller
 
         $validated['paid_by'] = auth()->id();
 
-        $expense = \App\Models\Expense::create($validated);
-
-        // Get all members of the colocation to split the expense
+        // Check if colocation is active
         $colocation = \App\Models\Colocation::findOrFail($validated['colocation_id']);
+        if ($colocation->status === 'cancelled') {
+            return back()->with('error', 'Cannot add expenses to a cancelled colocation.');
+        }
+
+        $expense = \App\Models\Expense::create($validated);
         $members = $colocation->members;
         $memberCount = $members->count();
 
