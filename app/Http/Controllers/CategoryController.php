@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\Colocation;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -16,13 +18,13 @@ class CategoryController extends Controller
             'name'          => 'required|string|max:255',
         ]);
 
-        $colocation = \App\Models\Colocation::findOrFail($validated['colocation_id']);
-        
+        $colocation = Colocation::findOrFail($validated['colocation_id']);
+
         if ($colocation->owner_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $category = \App\Models\Category::create($validated);
+        $category = Category::create($validated);
 
         return response()->json([
             'success'  => true,
@@ -35,8 +37,8 @@ class CategoryController extends Controller
      */
     public function destroy(string $id)
     {
-        $category = \App\Models\Category::findOrFail($id);
-        
+        $category = Category::findOrFail($id);
+
         if ($category->colocation->owner_id !== auth()->id()) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
